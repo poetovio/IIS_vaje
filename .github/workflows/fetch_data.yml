@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+permissions:
+  contents: write
+
 jobs:
   fetch_air:
     name: Fetch and pre-process air data
@@ -20,6 +23,9 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
 
+      - name: Setup DVC
+        uses: iterative/setup-dvc@v1
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -27,6 +33,12 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --frozen
+
+      - name: DVC pull data
+        run: |
+          dvc remote modify origin --local access_key_id ${{ secrets.DAGSHUB_ACCESS_KEY_ID }}
+          dvc remote modify origin --local secret_access_key ${{ secrets.DAGSHUB_SECRET_ACCESS_KEY }}
+          dvc pull
 
       - name: Run fetch script
         run: uv run python src/data/fetch_data.py
@@ -36,16 +48,19 @@ jobs:
 
       - name: Commit data changes
         run: |
-          git add data
+          dvc add data
+          dvc push
+
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
+
+          git add data.dvc .gitignore
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Updated raw air data on $(date -u '+%Y-%m-%d %H:%M:%S UTC') with GitHub Actions"
+            git commit -m "Update DVC-tracked data on $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           fi
 
       - name: Push changes
-        if: success()
-        run: git push
+        run: git push origin HEAD:main
