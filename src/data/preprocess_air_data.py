@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import numpy as np
 import pandas as pd
@@ -5,10 +6,12 @@ from lxml import etree as ET
 
 
 def preprocess_air_data():
-    output_dir = "data/preprocessed/air"
-    os.makedirs(output_dir, exist_ok=True)
+    project_root = Path(__file__).resolve().parents[2]
+    input_file = project_root / "data" / "raw" / "air" / "air_data.xml"
+    output_dir = project_root / "data" / "preprocessed" / "air"
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    with open("data/raw/air/air_data.xml", "rb") as file:
+    with open(input_file, "rb") as file:
         tree = ET.parse(file)
         root = tree.getroot()
 
@@ -19,12 +22,10 @@ def preprocess_air_data():
     print(f"Preparation Date: {root.find('datum_priprave').text}")
 
     sifra_vals = set(tree.xpath('//postaja/@sifra'))
-
     columns = ["date_to", "PM10", "PM2.5"]
 
     for sifra in sifra_vals:
         postaja_elements = tree.xpath(f'//postaja[@sifra="{sifra}"]')
-
         new_rows = []
 
         for postaja in postaja_elements:
@@ -44,9 +45,9 @@ def preprocess_air_data():
         new_df["PM10"] = pd.to_numeric(new_df["PM10"], errors="coerce")
         new_df["PM2.5"] = pd.to_numeric(new_df["PM2.5"], errors="coerce")
 
-        file_path = os.path.join(output_dir, f"{sifra}.csv")
+        file_path = output_dir / f"{sifra}.csv"
 
-        if os.path.exists(file_path):
+        if file_path.exists():
             old_df = pd.read_csv(file_path)
 
             old_df["date_to"] = pd.to_datetime(old_df["date_to"], errors="coerce")
@@ -58,10 +59,8 @@ def preprocess_air_data():
             df = new_df
 
         before_dedup = len(df)
-
         df = df.drop_duplicates(subset=["date_to"], keep="last")
         df = df.sort_values(by="date_to")
-
         after_dedup = len(df)
 
         df.to_csv(file_path, index=False)

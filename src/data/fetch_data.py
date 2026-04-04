@@ -1,6 +1,7 @@
+from pathlib import Path
 import requests
 from datetime import datetime
-import xml.etree.ElementTree as ET
+
 
 def fetch_air_data():
     try:
@@ -9,7 +10,11 @@ def fetch_air_data():
         response = requests.get(url)
         response.raise_for_status()
 
-        file_path = "data/raw/air/air_data.xml"
+        project_root = Path(__file__).resolve().parents[2]
+        raw_dir = project_root / "data" / "raw" / "air"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+
+        file_path = raw_dir / "air_data.xml"
         with open(file_path, "wb") as file:
             file.write(response.content)
 
@@ -17,6 +22,7 @@ def fetch_air_data():
 
     except requests.RequestException as e:
         print(f"Error fetching data: {e}")
+
 
 if __name__ == "__main__":
     fetch_air_data()
