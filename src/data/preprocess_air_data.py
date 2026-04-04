@@ -1,7 +1,8 @@
+import os
 import numpy as np
 import pandas as pd
 from lxml import etree as ET
-import os
+
 
 def preprocess_air_data():
     output_dir = "data/preprocessed/air"
@@ -19,19 +20,21 @@ def preprocess_air_data():
 
     sifra_vals = set(tree.xpath('//postaja/@sifra'))
 
+    columns = ["date_to", "PM10", "PM2.5"]
+
     for sifra in sifra_vals:
         postaja_elements = tree.xpath(f'//postaja[@sifra="{sifra}"]')
 
-        data = []
+        new_rows = []
 
         for postaja in postaja_elements:
-            date_to = postaja.findtext('datum_do')
-            pm10 = postaja.findtext('pm10')
-            pm2_5 = postaja.findtext('pm2.5')
+            date_to = postaja.find('datum_do').text if postaja.find('datum_do') is not None else np.nan
+            pm10 = postaja.find('pm10').text if postaja.find('pm10') is not None else np.nan
+            pm2_5 = postaja.find('pm2.5').text if postaja.find('pm2.5') is not None else np.nan
 
-            data.append([date_to, pm10, pm2_5])
+            new_rows.append([date_to, pm10, pm2_5])
 
-        new_df = pd.DataFrame(data, columns=["date_to", "PM10", "PM2.5"])
+        new_df = pd.DataFrame(new_rows, columns=columns)
 
         new_df = new_df.replace("", np.nan)
         new_df = new_df.replace("<1", 1)
@@ -41,21 +44,30 @@ def preprocess_air_data():
         new_df["PM10"] = pd.to_numeric(new_df["PM10"], errors="coerce")
         new_df["PM2.5"] = pd.to_numeric(new_df["PM2.5"], errors="coerce")
 
-        file_path = f"{output_dir}/{sifra}.csv"
+        file_path = os.path.join(output_dir, f"{sifra}.csv")
 
         if os.path.exists(file_path):
             old_df = pd.read_csv(file_path)
+
             old_df["date_to"] = pd.to_datetime(old_df["date_to"], errors="coerce")
+            old_df["PM10"] = pd.to_numeric(old_df["PM10"], errors="coerce")
+            old_df["PM2.5"] = pd.to_numeric(old_df["PM2.5"], errors="coerce")
+
             df = pd.concat([old_df, new_df], ignore_index=True)
         else:
             df = new_df
 
-        df = df.drop_duplicates(subset=["date_to"])
+        before_dedup = len(df)
+
+        df = df.drop_duplicates(subset=["date_to"], keep="last")
         df = df.sort_values(by="date_to")
+
+        after_dedup = len(df)
 
         df.to_csv(file_path, index=False)
 
-        print(f"Updated: {sifra}.csv")
+        print(f"Updated: {sifra}.csv | rows before dedup: {before_dedup}, after dedup: {after_dedup}")
+
 
 if __name__ == "__main__":
     preprocess_air_data()
