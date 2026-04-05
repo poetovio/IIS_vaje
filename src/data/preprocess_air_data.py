@@ -1,14 +1,19 @@
 from pathlib import Path
-import os
+
 import numpy as np
 import pandas as pd
+import yaml
 from lxml import etree as ET
 
 
 def preprocess_air_data():
     project_root = Path(__file__).resolve().parents[2]
+
+    with open(project_root / "params.yaml", "r", encoding="utf-8") as f:
+        params = yaml.safe_load(f)["preprocess"]
+
     input_file = project_root / "data" / "raw" / "air" / "air_data.xml"
-    output_dir = project_root / "data" / "preprocessed" / "air"
+    output_dir = project_root / params["output_dir"]
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with open(input_file, "rb") as file:
@@ -21,7 +26,7 @@ def preprocess_air_data():
     print(f"Suggested Capture Period: {root.find('predlagan_zajem_perioda').text}")
     print(f"Preparation Date: {root.find('datum_priprave').text}")
 
-    sifra_vals = set(tree.xpath('//postaja/@sifra'))
+    sifra_vals = sorted(set(tree.xpath('//postaja/@sifra')))
     columns = ["date_to", "PM10", "PM2.5"]
 
     for sifra in sifra_vals:
@@ -49,7 +54,6 @@ def preprocess_air_data():
 
         if file_path.exists():
             old_df = pd.read_csv(file_path)
-
             old_df["date_to"] = pd.to_datetime(old_df["date_to"], errors="coerce")
             old_df["PM10"] = pd.to_numeric(old_df["PM10"], errors="coerce")
             old_df["PM2.5"] = pd.to_numeric(old_df["PM2.5"], errors="coerce")
@@ -58,14 +62,12 @@ def preprocess_air_data():
         else:
             df = new_df
 
-        before_dedup = len(df)
         df = df.drop_duplicates(subset=["date_to"], keep="last")
         df = df.sort_values(by="date_to")
-        after_dedup = len(df)
 
         df.to_csv(file_path, index=False)
 
-        print(f"Updated: {sifra}.csv | rows before dedup: {before_dedup}, after dedup: {after_dedup}")
+        print(f"Updated: {sifra}.csv")
 
 
 if __name__ == "__main__":

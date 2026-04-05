@@ -2031,6 +2031,7 @@ dependencies = [
     { name = "lxml" },
     { name = "numpy" },
     { name = "pandas" },
+    { name = "pyyaml" },
     { name = "scikit-learn" },
 ]
 
@@ -2040,6 +2041,7 @@ requires-dist = [
     { name = "lxml", specifier = ">=6.0.2" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "pandas", specifier = ">=3.0.2" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
 ]
 

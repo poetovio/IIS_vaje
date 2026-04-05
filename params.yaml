@@ -1,0 +1,5 @@
+fetch:
+  url: "https://www.arso.gov.si/xml/zrak/ones_zrak_urni_podatki_7dni.xml"
+
+preprocess:
+  output_dir: "data/preprocessed/air"
