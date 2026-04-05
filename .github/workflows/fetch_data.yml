@@ -28,35 +28,32 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: uv sync --frozen
-
-      - name: Configure DVC credentials
-        run: |
-          uv run dvc remote modify origin --local access_key_id ${{ secrets.DAGSHUB_ACCESS_KEY_ID }}
-          uv run dvc remote modify origin --local secret_access_key ${{ secrets.DAGSHUB_SECRET_ACCESS_KEY }}
-
-      - name: DVC pull data
-        run: uv run dvc pull
-
-      - name: Run DVC pipeline
-        run: uv run dvc repro
-
-      - name: Push DVC data
-        run: uv run dvc push
-
-      - name: Commit pipeline changes
+      - name: Setup Git
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
 
-          git add dvc.yaml dvc.lock params.yaml .gitignore
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
 
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update air data with DVC pipeline on $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          fi
+      - name: DVC setup remote
+        run: |
+          uv run dvc remote modify origin --local access_key_id ${{ secrets.DAGSHUB_ACCESS_KEY_ID }}
+          uv run dvc remote modify origin --local secret_access_key ${{ secrets.DAGSHUB_SECRET_ACCESS_KEY }}
+
+      - name: Run DVC pipeline
+        run: |
+          uv run dvc pull
+          uv run dvc status
+          uv run dvc repro
+          uv run dvc push
+
+      - name: Commit DVC lock changes
+        run: |
+          git add dvc.lock
+          git commit -m "Update dvc.lock on $(date -u '+%Y-%m-%d %H:%M:%S UTC') with GitHub Actions" || true
 
       - name: Push changes
-        run: git push origin HEAD:main
+        run: |
+          git push origin HEAD:main
