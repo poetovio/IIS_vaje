@@ -21,7 +21,7 @@ stages:
           persist: true
 
   validate:
-    cmd: cd gx && uv run python run_checkpoint.py
+    cmd: uv run python gx/run_checkpoint.py
     deps:
       - data/preprocessed/air/
       - gx/run_checkpoint.py

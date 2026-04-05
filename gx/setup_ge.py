@@ -3,22 +3,21 @@ import great_expectations as gx
 
 
 def main():
-    context = gx.get_context()
+    project_root = Path(__file__).resolve().parents[1]
+    gx_root = project_root / "gx"
+    data_root = project_root / "data"
+
+    context = gx.get_context(context_root_dir=str(gx_root))
 
     datasource_name = "air_quality"
     data_asset_name = "air_quality_data"
     expectation_suite_name = "air_quality_suite"
     checkpoint_name = "air_quality_checkpoint"
 
-    base_directory = str((Path(__file__).resolve().parents[1] / "data").resolve())
-
-    try:
-        datasource = context.get_datasource(datasource_name)
-    except Exception:
-        datasource = context.sources.add_pandas_filesystem(
-            name=datasource_name,
-            base_directory=base_directory,
-        )
+    datasource = context.sources.add_or_update_pandas_filesystem(
+        name=datasource_name,
+        base_directory=str(data_root),
+    )
 
     try:
         data_asset = datasource.get_asset(data_asset_name)
@@ -33,6 +32,7 @@ def main():
     )
 
     batch_request = data_asset.build_batch_request()
+
     validator = context.get_validator(
         batch_request=batch_request,
         expectation_suite_name=expectation_suite_name,
