@@ -21,12 +21,26 @@ stages:
           persist: true
 
   validate:
-    cmd: uv run python gx/run_checkpoint.py
+    cmd: |
+      uv run python gx/setup_ge.py
+      uv run python gx/run_checkpoint.py
     deps:
       - data/preprocessed/air/
+      - gx/setup_ge.py
       - gx/run_checkpoint.py
     outs:
       - gx/uncommitted/data_docs:
           persist: true
       - gx/uncommitted/validations:
+          persist: true
+
+  test_data:
+    cmd: uv run python src/data/test_data.py
+    deps:
+      - data/preprocessed/air/
+      - src/data/test_data.py
+    outs:
+      - data/reference/air:
+          persist: true
+      - reports/data_testing/air:
           persist: true

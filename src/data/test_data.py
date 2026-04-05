@@ -7,6 +7,9 @@ from evidently.presets.dataset_stats import DataSummaryPreset
 from evidently.presets.drift import DataDriftPreset
 
 
+WINDOW_SIZE = 168
+
+
 def prepare_dataframes(reference: pd.DataFrame, current: pd.DataFrame):
     if "date_to" in reference.columns:
         del reference["date_to"]
@@ -57,7 +60,10 @@ def run_station_test(current_path: Path, reference_path: Path, report_path: Path
 
     reference_full = pd.read_csv(reference_path)
 
-    reference, current, skipped_columns = prepare_dataframes(reference_full, current_full)
+    current_window = current_full.tail(WINDOW_SIZE).copy()
+    reference_window = reference_full.tail(WINDOW_SIZE).copy()
+
+    reference, current, skipped_columns = prepare_dataframes(reference_window, current_window)
 
     if skipped_columns:
         print(f"Skipping empty columns for {current_path.name}: {', '.join(skipped_columns)}")

@@ -13,15 +13,15 @@ stages:
     outs:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: 950e170d49e779dac89f21cd5729a981
-      size: 1170689
+      md5: 64b9fc55eb39cf5ea1d00ff1a6f41a5e
+      size: 1170695
   preprocess:
     cmd: uv run python src/data/preprocess_air_data.py
     deps:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: 950e170d49e779dac89f21cd5729a981
-      size: 1170689
+      md5: 64b9fc55eb39cf5ea1d00ff1a6f41a5e
+      size: 1170695
     - path: src/data/preprocess_air_data.py
       hash: md5
       md5: f2076472bc7a58760ea545c8be8cae07
@@ -36,7 +36,7 @@ stages:
       size: 124096
       nfiles: 23
   validate:
-    cmd: uv run python gx/run_checkpoint.py
+    cmd: "uv run python gx/setup_ge.py\nuv run python gx/run_checkpoint.py\n"
     deps:
     - path: data/preprocessed/air/
       hash: md5
@@ -47,14 +47,41 @@ stages:
       hash: md5
       md5: b5446ce349af8d2c25e86635131382dd
       size: 1680
+    - path: gx/setup_ge.py
+      hash: md5
+      md5: 33062d13c3db2bcb7427fed40f00a383
+      size: 2102
     outs:
     - path: gx/uncommitted/data_docs
       hash: md5
-      md5: 135c04b058711310284461f280d88631.dir
-      size: 4335925
-      nfiles: 26
+      md5: 5f98c9ec96c0a6ea8b0f6799d3ecedb4.dir
+      size: 4386370
+      nfiles: 27
     - path: gx/uncommitted/validations
       hash: md5
-      md5: 62503318d03baa03abe674febac5543b.dir
-      size: 22494
-      nfiles: 5
+      md5: 8d42cb9f702cc6d4e2e7d0b3b79cf1a1.dir
+      size: 28092
+      nfiles: 6
+  test_data:
+    cmd: uv run python src/data/test_data.py
+    deps:
+    - path: data/preprocessed/air/
+      hash: md5
+      md5: cd36dd9b4490775f1a6055325572e599.dir
+      size: 124096
+      nfiles: 23
+    - path: src/data/test_data.py
+      hash: md5
+      md5: f4ba54015999dfcd275b731e66790f9c
+      size: 4311
+    outs:
+    - path: data/reference/air
+      hash: md5
+      md5: cd36dd9b4490775f1a6055325572e599.dir
+      size: 124096
+      nfiles: 23
+    - path: reports/data_testing/air
+      hash: md5
+      md5: 30e9ab6f13a28f1695c322bd68ba10ff.dir
+      size: 79775409
+      nfiles: 21
