@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   fetch_air:
-    name: Fetch and pre-process air data
+    name: Fetch, preprocess, validate, and publish
     runs-on: ubuntu-latest
 
     steps:
@@ -28,14 +28,21 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
       - name: Setup Git
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
 
       - name: Install dependencies
-        run: |
-          uv sync --frozen
+        run: uv sync --frozen
 
       - name: DVC setup remote
         run: |
@@ -45,15 +52,20 @@ jobs:
       - name: Run DVC pipeline
         run: |
           uv run dvc pull
-          uv run dvc status
           uv run dvc repro
           uv run dvc push
 
-      - name: Commit DVC lock changes
+      - name: Commit DVC changes
         run: |
           git add dvc.lock
           git commit -m "Update dvc.lock on $(date -u '+%Y-%m-%d %H:%M:%S UTC') with GitHub Actions" || true
 
-      - name: Push changes
+      - name: Push Git changes
+        run: git push origin HEAD:main
+
+      - name: Deploy Great Expectations docs to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          git push origin HEAD:main
+          netlify deploy --prod --dir=gx/uncommitted/data_docs/local_site
