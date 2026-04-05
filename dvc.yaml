@@ -19,3 +19,14 @@ stages:
     outs:
       - data/preprocessed/air:
           persist: true
+
+  validate:
+    cmd: cd gx && uv run python run_checkpoint.py
+    deps:
+      - data/preprocessed/air/
+      - gx/run_checkpoint.py
+    outs:
+      - gx/uncommitted/data_docs:
+          persist: true
+      - gx/uncommitted/validations:
+          persist: true

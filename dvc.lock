@@ -9,20 +9,19 @@ stages:
       size: 865
     params:
       params.yaml:
-        fetch.url: 
-          https://www.arso.gov.si/xml/zrak/ones_zrak_urni_podatki_7dni.xml
+        fetch.url: https://www.arso.gov.si/xml/zrak/ones_zrak_urni_podatki_7dni.xml
     outs:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: 860f6df6d756cc693c73df83dfcd4c4e
-      size: 1170664
+      md5: 298ca29c76bcb23d921851e8445c8ae1
+      size: 1170660
   preprocess:
     cmd: uv run python src/data/preprocess_air_data.py
     deps:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: 860f6df6d756cc693c73df83dfcd4c4e
-      size: 1170664
+      md5: 298ca29c76bcb23d921851e8445c8ae1
+      size: 1170660
     - path: src/data/preprocess_air_data.py
       hash: md5
       md5: f2076472bc7a58760ea545c8be8cae07
@@ -33,6 +32,29 @@ stages:
     outs:
     - path: data/preprocessed/air
       hash: md5
-      md5: 345035c7e74c54ead6a4249804bd509d.dir
-      size: 120175
+      md5: 30a831ac0ee774a4e2e3ca19564fc343.dir
+      size: 120735
       nfiles: 23
+  validate:
+    cmd: cd gx && uv run python run_checkpoint.py
+    deps:
+    - path: data/preprocessed/air/
+      hash: md5
+      md5: 30a831ac0ee774a4e2e3ca19564fc343.dir
+      size: 120735
+      nfiles: 23
+    - path: gx/run_checkpoint.py
+      hash: md5
+      md5: 4a46f126d15dd5fad7fea8607917a2a7
+      size: 546
+    outs:
+    - path: gx/uncommitted/data_docs
+      hash: md5
+      md5: cbc2b5e480158d50a27455b1f5381dc5.dir
+      size: 4234987
+      nfiles: 24
+    - path: gx/uncommitted/validations
+      hash: md5
+      md5: 4b9ead179858513d62873f212f88ddda.dir
+      size: 11272
+      nfiles: 3
