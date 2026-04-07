@@ -2,6 +2,9 @@ name: Fetch data on schedule
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
   schedule:
     - cron: '0 * * * *'
 
@@ -26,6 +29,14 @@ jobs:
 
       - name: Install uv
         run: pipx install uv
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
 
       - name: Setup DVC
         uses: iterative/setup-dvc@v1
@@ -54,36 +65,13 @@ jobs:
           git add dvc.lock
           git commit -m "Update pipeline outputs $(date -u)" || true
 
-      - name: Prepare Netlify site
+      - name: Push changes
         run: |
-          mkdir -p site/ge
-          mkdir -p site/evidently
-
-          cp -r gx/uncommitted/data_docs/local_site/* site/ge/ || true
-          cp -r reports/data_testing/air/* site/evidently/ || true
-
-          cat > site/index.html << 'EOF'
-          <!doctype html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Data Reports</title>
-          </head>
-          <body>
-            <h1>Data Reports</h1>
-            <ul>
-              <li><a href="./ge/">Great Expectations Report</a></li>
-              <li><a href="./evidently/">Evidently Report</a></li>
-            </ul>
-          </body>
-          </html>
-          EOF
-
-      - name: Install Netlify CLI
-        run: npm install -g netlify-cli
+          git push origin HEAD:main
 
       - name: Prepare Netlify site
         run: |
+          rm -rf site
           mkdir -p site/ge
           mkdir -p site/evidently
 
@@ -169,6 +157,7 @@ jobs:
             <div class="grid">
           EOF
 
+          shopt -s nullglob
           for file in site/evidently/*.html; do
             name=$(basename "$file")
             if [ "$name" != "index.html" ]; then
@@ -182,3 +171,10 @@ jobs:
           </body>
           </html>
           EOF
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          netlify deploy --prod --dir=site
