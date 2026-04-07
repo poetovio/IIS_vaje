@@ -12,3 +12,5 @@ train:
   epochs: 50
   batch_size: 32
   min_rows: 200
+  mlflow_experiment: "IIS_vaje_train"
+  mlflow_tracking_uri: "https://dagshub.com/poetovio/IIS_vaje.mlflow"
