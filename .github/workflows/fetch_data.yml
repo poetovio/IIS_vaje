@@ -82,12 +82,103 @@ jobs:
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
 
-      - name: Deploy to Netlify
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Prepare Netlify site
         run: |
-          netlify deploy --prod --dir=site
+          mkdir -p site/ge
+          mkdir -p site/evidently
 
-      - name: Push changes
-        run: git push origin HEAD:main
+          cp -r gx/uncommitted/data_docs/local_site/* site/ge/ || true
+          cp -r reports/data_testing/air/* site/evidently/ || true
+
+          cat > site/index.html <<'EOF'
+          <!doctype html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Data Reports</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+              }
+              h1 {
+                margin-bottom: 20px;
+              }
+              ul {
+                line-height: 2;
+              }
+              a {
+                text-decoration: none;
+                color: #0a66c2;
+                font-weight: bold;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Data Reports</h1>
+            <ul>
+              <li><a href="./ge/">Great Expectations Report</a></li>
+              <li><a href="./evidently/">Evidently Reports</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+          cat > site/evidently/index.html <<'EOF'
+          <!doctype html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Evidently Reports</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+              }
+              h1 {
+                margin-bottom: 20px;
+              }
+              .grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+              }
+              .button {
+                display: inline-block;
+                padding: 10px 16px;
+                border-radius: 8px;
+                background: #0a66c2;
+                color: white;
+                text-decoration: none;
+                font-weight: bold;
+              }
+              .button:hover {
+                background: #084f96;
+              }
+              .back {
+                display: inline-block;
+                margin-bottom: 20px;
+                text-decoration: none;
+                color: #0a66c2;
+              }
+            </style>
+          </head>
+          <body>
+            <a class="back" href="../">← Back to Reports</a>
+            <h1>Evidently Reports by Station</h1>
+            <div class="grid">
+          EOF
+
+          for file in site/evidently/*.html; do
+            name=$(basename "$file")
+            if [ "$name" != "index.html" ]; then
+              station="${name%.html}"
+              echo "        <a class=\"button\" href=\"./$name\">$station</a>" >> site/evidently/index.html
+            fi
+          done
+
+          cat >> site/evidently/index.html <<'EOF'
+            </div>
+          </body>
+          </html>
+          EOF
