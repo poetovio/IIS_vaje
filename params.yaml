@@ -3,3 +3,12 @@ fetch:
 
 preprocess:
   output_dir: "data/preprocessed/air"
+
+train:
+  test_size: 72
+  window_size: 24
+  target_col: "PM10"
+  random_state: 42
+  epochs: 50
+  batch_size: 32
+  min_rows: 200
