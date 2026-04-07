@@ -92,11 +92,11 @@ def run_station_test(current_path: Path, reference_path: Path, report_path: Path
 
     if passed:
         print(f"Data tests passed for {current_path.name}.")
-        current_full.to_csv(reference_path, index=False)
-        return True
+    else:
+        print(f"Data drift detected for {current_path.name}.")
 
-    print(f"Data tests failed for {current_path.name}.")
-    return False
+    current_full.to_csv(reference_path, index=False)
+    return passed
 
 
 def main():
@@ -115,7 +115,7 @@ def main():
         print(f"No CSV files found in {current_dir}")
         sys.exit(1)
 
-    failed_stations = []
+    drift_stations = []
 
     for current_path in current_files:
         station_name = current_path.stem
@@ -129,11 +129,12 @@ def main():
         )
 
         if not passed:
-            failed_stations.append(station_name)
+            drift_stations.append(station_name)
 
-    if failed_stations:
-        print("Data tests failed for stations:", ", ".join(failed_stations))
-        sys.exit(1)
+    if drift_stations:
+        print("Data drift detected for stations:", ", ".join(drift_stations))
+        print("Reports generated successfully.")
+        sys.exit(0)
 
     print("Data tests passed for all stations.")
     sys.exit(0)

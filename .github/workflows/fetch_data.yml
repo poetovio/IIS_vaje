@@ -9,8 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  fetch_air:
-    name: Fetch, preprocess, validate, and publish
+  pipeline:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,21 +19,16 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v6
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+      - name: Install uv
+        run: pipx install uv
 
-      - name: Install Netlify CLI
-        run: npm install -g netlify-cli
+      - name: Setup DVC
+        uses: iterative/setup-dvc@v1
 
       - name: Setup Git
         run: |
@@ -46,26 +40,54 @@ jobs:
 
       - name: DVC setup remote
         run: |
-          uv run dvc remote modify origin --local access_key_id ${{ secrets.DAGSHUB_ACCESS_KEY_ID }}
-          uv run dvc remote modify origin --local secret_access_key ${{ secrets.DAGSHUB_SECRET_ACCESS_KEY }}
+          dvc remote modify origin --local access_key_id ${{ secrets.DAGSHUB_ACCESS_KEY_ID }}
+          dvc remote modify origin --local secret_access_key ${{ secrets.DAGSHUB_SECRET_ACCESS_KEY }}
 
       - name: Run DVC pipeline
         run: |
-          uv run dvc pull
-          uv run dvc repro
-          uv run dvc push
+          dvc pull
+          dvc repro
+          dvc push
 
-      - name: Commit DVC changes
+      - name: Commit pipeline changes
         run: |
           git add dvc.lock
-          git commit -m "Update dvc.lock on $(date -u '+%Y-%m-%d %H:%M:%S UTC') with GitHub Actions" || true
+          git commit -m "Update pipeline outputs $(date -u)" || true
 
-      - name: Push Git changes
-        run: git push origin HEAD:main
+      - name: Prepare Netlify site
+        run: |
+          mkdir -p site/ge
+          mkdir -p site/evidently
 
-      - name: Deploy Great Expectations docs to Netlify
+          cp -r gx/uncommitted/data_docs/local_site/* site/ge/ || true
+          cp -r reports/data_testing/air/* site/evidently/ || true
+
+          cat > site/index.html << 'EOF'
+          <!doctype html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Data Reports</title>
+          </head>
+          <body>
+            <h1>Data Reports</h1>
+            <ul>
+              <li><a href="./ge/">Great Expectations Report</a></li>
+              <li><a href="./evidently/">Evidently Report</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Deploy to Netlify
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          netlify deploy --prod --dir=gx/uncommitted/data_docs/local_site
+          netlify deploy --prod --dir=site
+
+      - name: Push changes
+        run: git push origin HEAD:main
