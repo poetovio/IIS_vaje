@@ -9,8 +9,7 @@ stages:
       size: 865
     params:
       params.yaml:
-        fetch.url: 
-          https://www.arso.gov.si/xml/zrak/ones_zrak_urni_podatki_7dni.xml
+        fetch.url: https://www.arso.gov.si/xml/zrak/ones_zrak_urni_podatki_7dni.xml
     outs:
     - path: data/raw/air/air_data.xml
       hash: md5
@@ -55,13 +54,13 @@ stages:
     outs:
     - path: gx/uncommitted/data_docs
       hash: md5
-      md5: 643991d94691d8c0b0b184f35b60e309.dir
-      size: 4487295
+      md5: a69be6ad876952489b15bbe0f77d5b3c.dir
+      size: 4487292
       nfiles: 29
     - path: gx/uncommitted/validations
       hash: md5
-      md5: c1daaa58e41a2c077fe9aba444020025.dir
-      size: 39315
+      md5: c316b90b193b06fbbbee072e08147067.dir
+      size: 39310
       nfiles: 8
   test_data:
     cmd: uv run python src/data/test_data.py
@@ -83,6 +82,52 @@ stages:
       nfiles: 23
     - path: reports/data_testing/air
       hash: md5
-      md5: 2649224b384474540139a2587418d0cd.dir
+      md5: 8de8c51d99fa5179ca4e97aecd1d3cae.dir
       size: 79762310
       nfiles: 21
+  train:
+    cmd: uv run python src/models/train.py
+    deps:
+    - path: data/preprocessed/air/
+      hash: md5
+      md5: e064388541560443dbc6d950ea96f8bb.dir
+      size: 149605
+      nfiles: 23
+    - path: data/reference/air/
+      hash: md5
+      md5: e064388541560443dbc6d950ea96f8bb.dir
+      size: 149605
+      nfiles: 23
+    - path: gx/uncommitted/data_docs/
+      hash: md5
+      md5: a69be6ad876952489b15bbe0f77d5b3c.dir
+      size: 4487292
+      nfiles: 29
+    - path: gx/uncommitted/validations/
+      hash: md5
+      md5: c316b90b193b06fbbbee072e08147067.dir
+      size: 39310
+      nfiles: 8
+    - path: src/models/preprocess.py
+      hash: md5
+      md5: 0b0c8755a12f929eb724dcb23961981f
+      size: 1400
+    - path: src/models/train.py
+      hash: md5
+      md5: 66fb18c560837168e2c8bf712ad80092
+      size: 8104
+    params:
+      params.yaml:
+        train.batch_size: 32
+        train.epochs: 50
+        train.min_rows: 200
+        train.random_state: 42
+        train.target_col: PM10
+        train.test_size: 72
+        train.window_size: 24
+    outs:
+    - path: models
+      hash: md5
+      md5: fb26968e3d70ae21e401353ab4e0e1d6.dir
+      size: 8529126
+      nfiles: 43

@@ -44,3 +44,24 @@ stages:
           persist: true
       - reports/data_testing/air:
           persist: true
+
+  train:
+    cmd: uv run python src/models/train.py
+    deps:
+      - src/models/preprocess.py
+      - src/models/train.py
+      - data/preprocessed/air/
+      - data/reference/air/
+      - gx/uncommitted/data_docs/
+      - gx/uncommitted/validations/
+    params:
+      - train.test_size
+      - train.window_size
+      - train.target_col
+      - train.random_state
+      - train.epochs
+      - train.batch_size
+      - train.min_rows
+    outs:
+      - models:
+          persist: true
