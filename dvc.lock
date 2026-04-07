@@ -14,15 +14,15 @@ stages:
     outs:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: 315a01ad8d898df3d1943286dd25c208
-      size: 1170489
+      md5: 532ceb544927bb985dc25c009df06d05
+      size: 1170416
   preprocess:
     cmd: uv run python src/data/preprocess_air_data.py
     deps:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: 315a01ad8d898df3d1943286dd25c208
-      size: 1170489
+      md5: 532ceb544927bb985dc25c009df06d05
+      size: 1170416
     - path: src/data/preprocess_air_data.py
       hash: md5
       md5: f2076472bc7a58760ea545c8be8cae07
@@ -33,16 +33,16 @@ stages:
     outs:
     - path: data/preprocessed/air
       hash: md5
-      md5: ec46b3736a986a3949d1e013e0ce66f2.dir
-      size: 149037
+      md5: e064388541560443dbc6d950ea96f8bb.dir
+      size: 149605
       nfiles: 23
   validate:
     cmd: "uv run python gx/setup_ge.py\nuv run python gx/run_checkpoint.py\n"
     deps:
     - path: data/preprocessed/air/
       hash: md5
-      md5: ec46b3736a986a3949d1e013e0ce66f2.dir
-      size: 149037
+      md5: e064388541560443dbc6d950ea96f8bb.dir
+      size: 149605
       nfiles: 23
     - path: gx/run_checkpoint.py
       hash: md5
@@ -55,21 +55,21 @@ stages:
     outs:
     - path: gx/uncommitted/data_docs
       hash: md5
-      md5: 38e0cd444cd9eb78dbbdc86285ee5b8d.dir
-      size: 4436831
-      nfiles: 28
+      md5: 643991d94691d8c0b0b184f35b60e309.dir
+      size: 4487295
+      nfiles: 29
     - path: gx/uncommitted/validations
       hash: md5
-      md5: ffa07fbd38896758fba3f151fe2ad729.dir
-      size: 33700
-      nfiles: 7
+      md5: c1daaa58e41a2c077fe9aba444020025.dir
+      size: 39315
+      nfiles: 8
   test_data:
     cmd: uv run python src/data/test_data.py
     deps:
     - path: data/preprocessed/air/
       hash: md5
-      md5: ec46b3736a986a3949d1e013e0ce66f2.dir
-      size: 149037
+      md5: e064388541560443dbc6d950ea96f8bb.dir
+      size: 149605
       nfiles: 23
     - path: src/data/test_data.py
       hash: md5
@@ -78,11 +78,11 @@ stages:
     outs:
     - path: data/reference/air
       hash: md5
-      md5: ec46b3736a986a3949d1e013e0ce66f2.dir
-      size: 149037
+      md5: e064388541560443dbc6d950ea96f8bb.dir
+      size: 149605
       nfiles: 23
     - path: reports/data_testing/air
       hash: md5
-      md5: ba2ae41bc540cb883516d1725aea2ca0.dir
-      size: 79777495
+      md5: 2649224b384474540139a2587418d0cd.dir
+      size: 79762310
       nfiles: 21
