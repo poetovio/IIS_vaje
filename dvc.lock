@@ -14,15 +14,15 @@ stages:
     outs:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: afe3acace945341b0d9724e8f582918d
-      size: 1169670
+      md5: 1dff74d843f6f83a412067bf51e5e01f
+      size: 1169682
   preprocess:
     cmd: uv run python src/data/preprocess_air_data.py
     deps:
     - path: data/raw/air/air_data.xml
       hash: md5
-      md5: afe3acace945341b0d9724e8f582918d
-      size: 1169670
+      md5: 1dff74d843f6f83a412067bf51e5e01f
+      size: 1169682
     - path: src/data/preprocess_air_data.py
       hash: md5
       md5: f2076472bc7a58760ea545c8be8cae07
@@ -33,16 +33,16 @@ stages:
     outs:
     - path: data/preprocessed/air
       hash: md5
-      md5: dae66ab2353113de5d2e28d3090633fe.dir
-      size: 450942
+      md5: 2ec57434ea93df81f3058c8824631c47.dir
+      size: 452749
       nfiles: 23
   validate:
     cmd: "uv run python gx/setup_ge.py\nuv run python gx/run_checkpoint.py\n"
     deps:
     - path: data/preprocessed/air/
       hash: md5
-      md5: dae66ab2353113de5d2e28d3090633fe.dir
-      size: 450942
+      md5: 2ec57434ea93df81f3058c8824631c47.dir
+      size: 452749
       nfiles: 23
     - path: gx/run_checkpoint.py
       hash: md5
@@ -55,21 +55,21 @@ stages:
     outs:
     - path: gx/uncommitted/data_docs
       hash: md5
-      md5: 879255ff5bbb5dca58a7ca0f27c2c783.dir
-      size: 16347705
-      nfiles: 264
+      md5: 307393ae517226a5f676b3b541cd2be2.dir
+      size: 16398175
+      nfiles: 265
     - path: gx/uncommitted/validations
       hash: md5
-      md5: 63f7c06e04b62ab24cc010bca7a868e3.dir
-      size: 1358569
-      nfiles: 243
+      md5: a0ec7e6eeba2ef9fb95b89c2cf88cd1e.dir
+      size: 1364184
+      nfiles: 244
   test_data:
     cmd: uv run python src/data/test_data.py
     deps:
     - path: data/preprocessed/air/
       hash: md5
-      md5: dae66ab2353113de5d2e28d3090633fe.dir
-      size: 450942
+      md5: 2ec57434ea93df81f3058c8824631c47.dir
+      size: 452749
       nfiles: 23
     - path: src/data/test_data.py
       hash: md5
@@ -78,37 +78,37 @@ stages:
     outs:
     - path: data/reference/air
       hash: md5
-      md5: dae66ab2353113de5d2e28d3090633fe.dir
-      size: 450942
+      md5: 2ec57434ea93df81f3058c8824631c47.dir
+      size: 452749
       nfiles: 23
     - path: reports/data_testing/air
       hash: md5
-      md5: bc6665e021d24862ced9c37b80ab5a94.dir
-      size: 79767001
+      md5: dda06ffb2f1580016d72a75bba374812.dir
+      size: 79760961
       nfiles: 21
   train:
     cmd: uv run python src/models/train.py
     deps:
     - path: data/preprocessed/air/
       hash: md5
-      md5: dae66ab2353113de5d2e28d3090633fe.dir
-      size: 450942
+      md5: 2ec57434ea93df81f3058c8824631c47.dir
+      size: 452749
       nfiles: 23
     - path: data/reference/air/
       hash: md5
-      md5: dae66ab2353113de5d2e28d3090633fe.dir
-      size: 450942
+      md5: 2ec57434ea93df81f3058c8824631c47.dir
+      size: 452749
       nfiles: 23
     - path: gx/uncommitted/data_docs/
       hash: md5
-      md5: 879255ff5bbb5dca58a7ca0f27c2c783.dir
-      size: 16347705
-      nfiles: 264
+      md5: 307393ae517226a5f676b3b541cd2be2.dir
+      size: 16398175
+      nfiles: 265
     - path: gx/uncommitted/validations/
       hash: md5
-      md5: 63f7c06e04b62ab24cc010bca7a868e3.dir
-      size: 1358569
-      nfiles: 243
+      md5: a0ec7e6eeba2ef9fb95b89c2cf88cd1e.dir
+      size: 1364184
+      nfiles: 244
     - path: src/models/preprocess.py
       hash: md5
       md5: 0b0c8755a12f929eb724dcb23961981f
@@ -129,6 +129,6 @@ stages:
     outs:
     - path: models
       hash: md5
-      md5: fc2eb168422ad594a7859bddd590943e.dir
-      size: 11222507
+      md5: ab163f72407a2a75a8319f42ad1504b8.dir
+      size: 11222455
       nfiles: 64
